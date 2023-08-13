@@ -1,67 +1,41 @@
 {
-    "name": "Ban All Bots",
-    "logo": "",
-    "repository": "https://github.com/ItZxSTaR/XBOTS",
+    "name": "Save-Restricted-Bot",
+    "description": "A Very Simple Telegram Restricted contents saving bot.",
+    "keywords": [
+        "telegram",
+        "files",
+        "bot"
+    ],
+    "repository": "https://github.com/kishaku23/Save_restricted_bot",
+    "website": "https://github.com/kishaku23/Save_restricted_bot",
+    "success_url": "https://t.me/Raj02_bots",
     "env": {
-      "BOT_TOKEN1": {
-            "description": "Your bot token",
-            "value": "",
-            "required": true
+        "ID": {
+          "description": "Get this value from my.telegram.org",
+          "required": true
         },
-        "BOT_TOKEN2": {
-            "description": "Your bot token",
-            "value": "",
-            "required": true
+        "HASH": {
+          "description": "Get this value from my.telegram.org",
+          "required": true
         },
-        "BOT_TOKEN3": {
-            "description": "Your bot token",
-            "value": "",
-            "required": true
+        "TOKEN": {
+          "description": "Get this from @BotFather",
+          "required": true
         },
-        "BOT_TOKEN4": {
-            "description": "Your bot token",
-            "value": "",
-            "required": true
-        },
-        "BOT_TOKEN5": {
-            "description": "Your bot token",
-            "value": "",
-            "required": true
-        },
-        "BOT_TOKEN6": {
-            "description": "Your bot token",
-            "value": "",
-            "required": true
-        },
-        "BOT_TOKEN7": {
-            "description": "Your bot token",
-            "value": "",
-            "required": true
-        },
-        "BOT_TOKEN8": {
-            "description": "Your bot token",
-            "value": "",
-            "required": true
-        },
-        "BOT_TOKEN9": {
-            "description": "Your bot token",
-            "value": "",
-            "required": true
-        },
-        "BOT_TOKEN10": {
-            "description": "Your bot token",
-            "value": "",
-            "required": true
-        },
-        "SUDO": {
-            "description": "sudo ids here.",
-            "value": "",
-            "required": true
+        "STRING": {
+          "description": "Your telegram account session.  Get from @Venom_String_robot",
+          "required": true
         }
     },
-  "buildpacks": [
-        {
+    "buildpacks": [
+        { 
             "url": "heroku/python"
         }
-    ]
+    ],
+    "formation": {
+        "worker": {
+            "quantity": 1,
+            "size": "eco"
+        }
+    }
 }
