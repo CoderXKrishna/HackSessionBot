@@ -1,6 +1,5 @@
 import os
-from HackSessionBot import app,API_ID,API_HASH
-from pyrogram import filters , Client
+from HackSessionBot import app, API_ID, API_HASH
 from HackSessionBot.Helpers.steve import (
     users_gc,
     user_info,
@@ -13,137 +12,126 @@ from HackSessionBot.Helpers.steve import (
     terminate_all,
     del_acc,
     piromote,
-    demote_all)
-from HackSessionBot.Helpers.data import HACK_MODS 
-from pyrogram.types import CallbackQuery 
+    demote_all,
+)
+from HackSessionBot.Helpers.data import HACK_MODS
+from pyrogram.types import CallbackQuery
 from pyrogram.raw import functions
-from telethon import TelegramClient 
-from telethon.sessions import StringSession 
-
+from telethon import TelegramClient, StringSession
+from typing import Coroutine
 
 
 @app.on_callback_query(filters.regex("A"))
-async def a_callback(client : Client , query : CallbackQuery):
+async def a_callback(client: Client, query: CallbackQuery) -> None:
     chat_id = query.message.chat.id
-    session = await client.ask(chat_id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ sᴛʀɪɴɢ sᴇssɪᴏɴ ᴏғ ᴛʜᴀᴛ ᴜsᴇʀ")    
-    ch = await users_gc(session.text)
+    session = await get_session(client, chat_id)
+    if not session:
+        return
+    ch = await users_gc(session)
     if len(ch) > 3855:
-        file = open("session.txt", "w")
-        file.write(ch)
-        file.close()
-        await client.send_document(chat_id, "session.txt")
-        os.system("rm -rf session.txt")
+        await save_and_send_session(ch, client, chat_id)
     else:
-        await query.message.reply_text(text = ch + "\n\n**ᴛʜᴀɴᴋs ғᴏʀ ᴜsɪɴɢ ᴍᴇ , ɢɪᴠᴇ ᴀ sᴛᴀʀ ᴛᴏ ᴍʏ [ʀᴇᴘᴏ](https://github.com/SupremeStark/HackSessionBot)**",
-            reply_markup=HACK_MODS,
-            disable_web_page_preview=True)
+        await send_message_and_markup(
+            client,
+            chat_id,
+            ch + "\n\nThanks for using me, give a star to my [repo](https://github.com/SupremeStark/HackSessionBot)",
+            HACK_MODS,
+        )
 
-    
+
 @app.on_callback_query(filters.regex("B"))
-async def b_callback(client : Client, query : CallbackQuery):
-    id = query.message.chat.id   
-    session = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ sᴛʀɪɴɢ sᴇssɪᴏɴ ᴏғ ᴛʜᴀᴛ ᴜsᴇʀ.")
-    info = await user_info(session.text)
-    await query.message.reply_text(text = info + "\n\n**ᴛʜᴀɴᴋs ғᴏʀ ᴜsɪɴɢ ᴍᴇ , ɢɪᴠᴇ ᴀ sᴛᴀʀ ᴛᴏ ᴍʏ [ʀᴇᴘᴏ](https://github.com/SupremeStark/HackSessionBot)**",
-            reply_markup=HACK_MODS,
-            disable_web_page_preview=True)
+async def b_callback(client: Client, query: CallbackQuery) -> None:
+    id = query.message.chat.id
+    session = await get_session(client, id)
+    if not session:
+        return
+    info = await user_info(session)
+    await send_message_and_markup(
+        client,
+        id,
+        info + "\n\nThanks for using me, give a star to my [repo](https://github.com/SupremeStark/HackSessionBot)",
+        HACK_MODS,
+    )
+
 
 @app.on_callback_query(filters.regex("C"))
-async def c_callback(client : Client, query : CallbackQuery):
-    id = query.message.chat.id   
-    session = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ sᴛʀɪɴɢ sᴇssɪᴏɴ ᴏғ ᴛʜᴀᴛ ᴜsᴇʀ.")
-    gc = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ ɢʀᴏᴜᴘ/ᴄʜᴀɴɴᴇʟ ɪᴅ ᴏʀ ᴜsᴇʀɴᴀᴍᴇ") 
-    hehe = await banall(session.text,gc)
-    await query.message.reply_text(text = hehe + "\n\n**ᴛʜᴀɴᴋs ғᴏʀ ᴜsɪɴɢ ᴍᴇ , ɢɪᴠᴇ ᴀ sᴛᴀʀ ᴛᴏ ᴍʏ [ʀᴇᴘᴏ](https://github.com/SupremeStark/HackSessionBot)**",
-            reply_markup=HACK_MODS,
-            disable_web_page_preview=True)
+async def c_callback(client: Client, query: CallbackQuery) -> None:
+    id = query.message.chat.id
+    session = await get_session(client, id)
+    if not session:
+        return
+    gc = await get_input(client, id, "Now give me the group/channel id or username")
+    if not gc:
+        return
+    hehe = await banall(session, gc)
+    await send_message_and_markup(
+        client,
+        id,
+        hehe + "\n\nThanks for using me, give a star to my [repo](https://github.com/SupremeStark/HackSessionBot)",
+        HACK_MODS,
+    )
+
 
 @app.on_callback_query(filters.regex("D"))
-async def d_callback(client : Client, query : CallbackQuery):
-    id = query.message.chat.id   
-    session = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ sᴛʀɪɴɢ sᴇssɪᴏɴ ᴏғ ᴛʜᴀᴛ ᴜsᴇʀ.")
-    hehe = await get_otp(session.text)
-    await query.message.reply_text(text = hehe + "\n\n**ᴛʜᴀɴᴋs ғᴏʀ ᴜsɪɴɢ ᴍᴇ , ɢɪᴠᴇ ᴀ sᴛᴀʀ ᴛᴏ ᴍʏ [ʀᴇᴘᴏ](https://github.com/SupremeStark/HackSessionBot)**",
-            reply_markup=HACK_MODS,
-            disable_web_page_preview=True)
+async def d_callback(client: Client, query: CallbackQuery) -> None:
+    id = query.message.chat.id
+    session = await get_session(client, id)
+    if not session:
+        return
+    hehe = await get_otp(session)
+    await send_message_and_markup(
+        client,
+        id,
+        hehe + "\n\nThanks for using me, give a star to my [repo](https://github.com/SupremeStark/HackSessionBot)",
+        HACK_MODS,
+    )
+
 
 @app.on_callback_query(filters.regex("E"))
-async def e_callback(client : Client, query : CallbackQuery):
-    id = query.message.chat.id   
-    session = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ sᴛʀɪɴɢ sᴇssɪᴏɴ ᴏғ ᴛʜᴀᴛ ᴜsᴇʀ.")
-    gc = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ ɢʀᴏᴜᴘ/ᴄʜᴀɴɴᴇʟ ɪᴅ ᴏʀ ᴜsᴇʀɴᴀᴍᴇ") 
-    hehe = await join_ch(session.text,gc)
-    await query.message.reply_text(text = hehe + "\n\n**ᴛʜᴀɴᴋs ғᴏʀ ᴜsɪɴɢ ᴍᴇ , ɢɪᴠᴇ ᴀ sᴛᴀʀ ᴛᴏ ᴍʏ [ʀᴇᴘᴏ](https://github.com/SupremeStark/HackSessionBot)**",
-            reply_markup=HACK_MODS,
-            disable_web_page_preview=True)
+async def e_callback(client: Client, query: CallbackQuery) -> None:
+    id = query.message.chat.id
+    session = await get_session(client, id)
+    if not session:
+        return
+    gc = await get_input(client, id, "Now give me the group/channel id or username")
+    if not gc:
+        return
+    hehe = await join_ch(session, gc)
+    await send_message_and_markup(
+        client,
+        id,
+        hehe + "\n\nThanks for using me, give a star to my [repo](https://github.com/SupremeStark/HackSessionBot)",
+        HACK_MODS,
+    )
+
 
 @app.on_callback_query(filters.regex("F"))
-async def f_callback(client : Client, query : CallbackQuery):
-    id = query.message.chat.id   
-    session = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ sᴛʀɪɴɢ sᴇssɪᴏɴ ᴏғ ᴛʜᴀᴛ ᴜsᴇʀ.")
-    gc = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ ɢʀᴏᴜᴘ/ᴄʜᴀɴɴᴇʟ ɪᴅ ᴏʀ ᴜsᴇʀɴᴀᴍᴇ") 
-    hehe = await leave_ch(session.text,gc)
-    await query.message.reply_text(text = hehe + "\n\n**ᴛʜᴀɴᴋs ғᴏʀ ᴜsɪɴɢ ᴍᴇ , ɢɪᴠᴇ ᴀ sᴛᴀʀ ᴛᴏ ᴍʏ [ʀᴇᴘᴏ](https://github.com/SupremeStark/HackSessionBot)**",
-            reply_markup=HACK_MODS,
-            disable_web_page_preview=True)
+async def f_callback(client: Client, query: CallbackQuery) -> None:
+    id = query.message.chat.id
+    session = await get_session(client, id)
+    if not session:
+        return
+    gc = await get_input(client, id, "Now give me the group/channel id or username")
+    if not gc:
+        return
+    hehe = await leave_ch(session, gc)
+    await send_message_and_markup(
+        client,
+        id,
+        hehe + "\n\nThanks for using me, give a star to my [repo](https://github.com/SupremeStark/HackSessionBot)",
+        HACK_MODS,
+    )
+
 
 @app.on_callback_query(filters.regex("G"))
-async def g_callback(client : Client, query : CallbackQuery):
-    id = query.message.chat.id   
-    session = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ sᴛʀɪɴɢ sᴇssɪᴏɴ ᴏғ ᴛʜᴀᴛ ᴜsᴇʀ.")
-    gc = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ ɢʀᴏᴜᴘ/ᴄʜᴀɴɴᴇʟ ɪᴅ ᴏʀ ᴜsᴇʀɴᴀᴍᴇ") 
-    hehe = await del_ch(session.text,gc)
-    await query.message.reply_text(text = hehe + "\n\n**ᴛʜᴀɴᴋs ғᴏʀ ᴜsɪɴɢ ᴍᴇ , ɢɪᴠᴇ ᴀ sᴛᴀʀ ᴛᴏ ᴍʏ [ʀᴇᴘᴏ](https://github.com/SupremeStark/HackSessionBot)**",
-            reply_markup=HACK_MODS,
-            disable_web_page_preview=True)
-
-
-@app.on_callback_query(filters.regex("H"))
-async def h_callback(client : Client, query : CallbackQuery):
-    id = query.message.chat.id   
-    session = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ sᴛʀɪɴɢ sᴇssɪᴏɴ ᴏғ ᴛʜᴀᴛ ᴜsᴇʀ.")
-    hehe = await check_2fa(session.text)
-    await query.message.reply_text(text = hehe + "\n\n**ᴛʜᴀɴᴋs ғᴏʀ ᴜsɪɴɢ ᴍᴇ , ɢɪᴠᴇ ᴀ sᴛᴀʀ ᴛᴏ ᴍʏ [ʀᴇᴘᴏ](https://github.com/SupremeStark/HackSessionBot)**",
-            reply_markup=HACK_MODS,
-            disable_web_page_preview=True)
-
-@app.on_callback_query(filters.regex("I"))
-async def i_callback(client : Client, query : CallbackQuery):
-    id = query.message.chat.id   
-    session = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ sᴛʀɪɴɢ sᴇssɪᴏɴ ᴏғ ᴛʜᴀᴛ ᴜsᴇʀ.")
-    hehe = await terminate_all(session.text)
-    await query.message.reply_text(text = hehe + "\n\n**ᴛʜᴀɴᴋs ғᴏʀ ᴜsɪɴɢ ᴍᴇ , ɢɪᴠᴇ ᴀ sᴛᴀʀ ᴛᴏ ᴍʏ [ʀᴇᴘᴏ](https://github.com/SupremeStark/HackSessionBot)**",
-            reply_markup=HACK_MODS,
-            disable_web_page_preview=True)
-
-@app.on_callback_query(filters.regex("J"))
-async def j_callback(client : Client, query : CallbackQuery):
-    id = query.message.chat.id   
-    session = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ sᴛʀɪɴɢ sᴇssɪᴏɴ ᴏғ ᴛʜᴀᴛ ᴜsᴇʀ.")    
-    hehe = await del_acc(session.text)
-    await query.message.reply_text(text = hehe + "\n\n**ᴛʜᴀɴᴋs ғᴏʀ ᴜsɪɴɢ ᴍᴇ , ɢɪᴠᴇ ᴀ sᴛᴀʀ ᴛᴏ ᴍʏ [ʀᴇᴘᴏ](https://github.com/SupremeStark/HackSessionBot)**",
-            reply_markup=HACK_MODS,
-            disable_web_page_preview=True)
-
-@app.on_callback_query(filters.regex("K"))
-async def k_callback(client : Client, query : CallbackQuery):
-    id = query.message.chat.id   
-    session = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ sᴛʀɪɴɢ sᴇssɪᴏɴ ᴏғ ᴛʜᴀᴛ ᴜsᴇʀ.")    
-    user_id = await client.ask(id,"ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ ᴜsᴇʀ ɪᴅ/ᴜsᴇʀɴᴀᴍᴇ ᴡʜᴏᴍ ɪ ᴡɪʟʟ ᴘʀᴏᴍᴏᴛᴇ.")
-    gc_id = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ ɢʀᴏᴜᴘ ɪᴅ/ᴜsᴇʀɴᴀᴍᴇ ᴡʜᴇʀᴇ ɪ ᴡɪʟʟ ᴘʀᴏᴍᴏᴛᴇ ᴛʜᴀᴛ ᴜsᴇʀ.")
-    hehe = await piromote(session.text,gc_id,user_id)
-    await query.message.reply_text(text = hehe + "\n\n**ᴛʜᴀɴᴋs ғᴏʀ ᴜsɪɴɢ ᴍᴇ , ɢɪᴠᴇ ᴀ sᴛᴀʀ ᴛᴏ ᴍʏ [ʀᴇᴘᴏ](https://github.com/SupremeStark/HackSessionBot)**",
-            reply_markup=HACK_MODS,
-            disable_web_page_preview=True)
-
-@app.on_callback_query(filters.regex("L"))
-async def l_callback(client : Client, query : CallbackQuery):
-    id = query.message.chat.id   
-    session = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ sᴛʀɪɴɢ sᴇssɪᴏɴ ᴏғ ᴛʜᴀᴛ ᴜsᴇʀ.")    
-    gc_id = await client.ask(id,"ɴᴏᴡ ɢɪᴠᴇ ᴍᴇ ᴛʜᴇ ɢʀᴏᴜᴘ ɪᴅ/ᴜsᴇʀɴᴀᴍᴇ ᴡʜᴇʀᴇ ɪ ᴡɪʟʟ ᴅᴇᴍᴏᴛᴇ ᴀʟʟ ᴍᴇᴍʙᴇʀs.")
-    hehe = await demote_all(session.text,gc_id,user_id)
-    await query.message.reply_text(text = hehe + "\n\n**ᴛʜᴀɴᴋs ғᴏʀ ᴜsɪɴɢ ᴍᴇ , ɢɪᴠᴇ ᴀ sᴛᴀʀ ᴛᴏ ᴍʏ [ʀᴇᴘᴏ](https://github.com/SupremeStark/HackSessionBot)**",
-            reply_markup=HACK_MODS,
-            disable_web_page_preview=True)
-
-
+async def g_callback(client: Client, query: CallbackQuery) -> None:
+    id = query.message.chat.id
+    session = await get_session(client, id)
+    if not session:
+        return
+    gc = await get_input(client, id, "Now give me the group/channel id or username")
+    if not gc:
+        return
+    hehe = await del_ch(session, gc)
+    await send_message_and_markup(
+        client,
