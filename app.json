@@ -6,9 +6,9 @@
         "files",
         "bot"
     ],
-    "repository": "https://github.com/anikalwayspro/HackSessionBot",
-    "website": "https://github.com/anikalwayspro/HackSessionBot",
-    "success_url": "https://github.com/anikalwayspro/HackSessionBot",
+    "repository": "https://github.com/CoderXKrishna/HackSessionBot",
+    "website": "https://github.com/CoderXKrishna/HackSessionBot",
+    "success_url": "https://github.com/CoderXKrishna/HackSessionBot",
     "env": {
         "ID": {
           "description": "Get this value from my.telegram.org",
