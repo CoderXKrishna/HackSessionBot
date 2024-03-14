@@ -1,6 +1,3 @@
 class Config:
-    API_ID = 
-    API_HASH = ""
-    TOKEN = ""  
-    START_PIC = "" 
-    CHAT = ""    
+    API_ID = 123456  # replace with your API_ID
+
